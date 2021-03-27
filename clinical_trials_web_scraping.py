@@ -119,7 +119,11 @@ for i in range(5000,10000):
         if contact_emails_tds[1].find("a") is not None:
             contact_emails[1] = contact_emails_tds[1].find("a").get_text()
 
-    conditions = ",".join([s.get_text() for s in soup.find("span", {"data-term": "Condition/disease"}).find_parent("table").find("td").find_all("span")])
+    conditions = ""
+    condition_table = soup.find("span", {"data-term": "Condition/disease"}).find_parent("table")
+    if condition_table is not None:
+        condition_spans = condition_table.find("td").find_all("span")
+        conditions = ",".join([s.get_text() for s in condition_spans])
 
     # save to dict
     study_data = StudyData(home_url+url,
