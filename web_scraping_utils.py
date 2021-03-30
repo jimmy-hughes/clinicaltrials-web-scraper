@@ -18,7 +18,7 @@ class StudyData:
 """Functions"""
 
 
-def get_urls(page, urls):
+def get_urls_from_page(page, urls):
     # get table rows from results table
     table_rows = page.find_all(name="tr", class_=["odd parent", "even parent"])
 
