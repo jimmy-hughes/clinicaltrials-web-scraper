@@ -5,31 +5,7 @@ from selenium.webdriver.support.ui import Select
 import time
 import pickle
 import csv
-
-"""Classes"""
-class StudyData:
-    def __init__(self, url, sponsor, contact_name1, contact_phone1, contact_email1, contact_name2, contact_phone2,
-                 contact_email2, conditions):
-        self.url = url
-        self.sponsor = sponsor
-        self.contact_name1 = contact_name1
-        self.contact_phone1 = contact_phone1
-        self.contact_email1 = contact_email1
-        self.contact_name2 = contact_name2
-        self.contact_phone2 = contact_phone2
-        self.contact_email2 = contact_email2
-        self.conditions = conditions
-
-"""Functions"""
-def get_urls(page, urls):
-    # get table rows from results table
-    table_rows = page.find_all(name="tr", class_=["odd parent", "even parent"])
-
-    # loop over rows and save hyperlinks
-    for row in table_rows:
-        urls.append(row.find(name="a", href=True)['href'])
-
-    return urls
+from web_scraping_utils import *
 
 """Initialization"""
 options = webdriver.ChromeOptions()
@@ -78,91 +54,114 @@ driver.implicitly_wait(10)
 #     pickle.dump(study_urls, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 """Read Study URLs from file"""
-with open('20210325_study_urls.pickle', "rb") as handle:
-    study_urls = pickle.load(handle)
+# with open('20210325_study_urls.pickle', "rb") as handle:
+#     study_urls = pickle.load(handle)
 
 """Gather Study Information"""
-home_url = 'https://clinicaltrials.gov'
-data = []
+# home_url = 'https://clinicaltrials.gov'
+# data = []
 # for url in study_urls:
-for i in range(5000,10000):
-    url = study_urls[i]
-    # open webpage
-    page = requests.get(home_url+url)
-    soup = bs4.BeautifulSoup(page.content, "html.parser")
-    # get data
-    sponsor_div = soup.find("div", {"id": "sponsor"})
-    sponsor = ""
-    if sponsor_div is not None:
-        sponsor = sponsor_div.contents[0][1:]
+#     # open webpage
+#     page = requests.get(home_url+url)
+#     soup = bs4.BeautifulSoup(page.content, "html.parser")
+#     # get data
+#     sponsor_div = soup.find("div", {"id": "sponsor"})
+#     sponsor = ""
+#     if sponsor_div is not None:
+#         sponsor = sponsor_div.contents[0][1:]
+#
+#     contact_names_tds = soup.find_all("td", {"headers" : "contactName" })
+#     contact_names = ['', '']
+#     if len(contact_names_tds) >= 1:
+#         contact_names[0] = contact_names_tds[0].get_text().replace('Contact: ', '')
+#     if len(contact_names_tds) >= 2:
+#         contact_names[1] = contact_names_tds[1].get_text().replace('Contact: ', '')
+#
+#     contact_phones_tds = soup.find_all("td", {"headers" : "contactPhone" })
+#     contact_phones = ['', '']
+#     if len(contact_phones_tds) >= 1:
+#         contact_phones[0] = contact_phones_tds[0].get_text()
+#     if len(contact_phones_tds) >= 2:
+#         contact_phones[1] = contact_phones_tds[1].get_text()
+#
+#     contact_emails_tds = soup.find_all("td", {"headers" : "contactEmail" })
+#     contact_emails = ['', '']
+#     if len(contact_phones_tds) >= 1:
+#         if contact_emails_tds[0].find("a") is not None:
+#             contact_emails[0] = contact_emails_tds[0].find("a").get_text()
+#     if len(contact_phones_tds) >= 2:
+#         if contact_emails_tds[1].find("a") is not None:
+#             contact_emails[1] = contact_emails_tds[1].find("a").get_text()
+#
+#     conditions = ""
+#     condition_header = soup.find("span", {"data-term": "Condition/disease"})
+#     if condition_header is not None:
+#         condition_table = condition_header.find_parent("table")
+#         if condition_table is not None:
+#             condition_spans = condition_table.find("td").find_all("span")
+#             conditions = ",".join([s.get_text() for s in condition_spans])
+#
+#     # save to dict
+#     study_data = StudyData(home_url+url,
+#                            sponsor,
+#                            contact_names[0],
+#                            contact_phones[0],
+#                            contact_emails[0],
+#                            contact_names[1],
+#                            contact_phones[1],
+#                            contact_emails[1],
+#                            conditions)
+#     data.append(study_data)
+#
+# with open('data.pickle', 'wb') as handle:
+#     pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    contact_names_tds = soup.find_all("td", {"headers" : "contactName" })
-    contact_names = ['', '']
-    if len(contact_names_tds) >= 1:
-        contact_names[0] = contact_names_tds[0].get_text().replace('Contact: ', '')
-    if len(contact_names_tds) >= 2:
-        contact_names[1] = contact_names_tds[1].get_text().replace('Contact: ', '')
+"""Read Study Data from file"""
+with open('20210325_data.pickle', "rb") as handle:
+    data = pickle.load(handle)
 
-    contact_phones_tds = soup.find_all("td", {"headers" : "contactPhone" })
-    contact_phones = ['', '']
-    if len(contact_phones_tds) >= 1:
-        contact_phones[0] = contact_phones_tds[0].get_text()
-    if len(contact_phones_tds) >= 2:
-        contact_phones[1] = contact_phones_tds[1].get_text()
+"""Save information to CSV"""
+email_blacklist = ['.edu',
+                   '@163.com',
+                   'clinical@',
+                   'information@',
+                   'info@',
+                   'patients@',
+                   'clinical.trial@',
+                   'doctor@',
+                   'medinfo@'
+                   'clinicaltrialinfo@',
+                   'clinicalresearch@',
+                   'regulatory@',
+                   'rehabilitation@',
+                   'clinical.trials@',
+                   'Clinical.Trials@'
+                   'information.center@']
+fieldnames = ['Sponsor',
+              'Name',
+              'Phone',
+              'Email',
+              'Name (Alt Contact)',
+              'Phone (Alt Contact)',
+              'Email (Alt Contact)',
+              'Conditions',
+              'URL']
 
-    contact_emails_tds = soup.find_all("td", {"headers" : "contactEmail" })
-    contact_emails = ['', '']
-    if len(contact_phones_tds) >= 1:
-        if contact_emails_tds[0].find("a") is not None:
-            contact_emails[0] = contact_emails_tds[0].find("a").get_text()
-    if len(contact_phones_tds) >= 2:
-        if contact_emails_tds[1].find("a") is not None:
-            contact_emails[1] = contact_emails_tds[1].find("a").get_text()
-
-    conditions = ""
-    condition_table = soup.find("span", {"data-term": "Condition/disease"}).find_parent("table")
-    if condition_table is not None:
-        condition_spans = condition_table.find("td").find_all("span")
-        conditions = ",".join([s.get_text() for s in condition_spans])
-
-    # save to dict
-    study_data = StudyData(home_url+url,
-                           sponsor,
-                           contact_names[0],
-                           contact_phones[0],
-                           contact_emails[0],
-                           contact_names[1],
-                           contact_phones[1],
-                           contact_emails[1],
-                           conditions)
-    data.append(study_data)
-
-with open('data_5000-10000.pickle', 'wb') as handle:
-    pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-# """Save information to CSV"""
-# with open('output.csv', mode='w') as csv_file:
-#     fieldnames = ['sponsor',
-#                   'conditions',
-#                   'contact_name_1',
-#                   'contact_phone_1',
-#                   'contact_email_1',
-#                   'contact_name_2',
-#                   'contact_phone_2',
-#                   'contact_email_2',
-#                   'url']
-#     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-#     writer.writeheader()
-#     for x in data:
-#         writer.writerow({'sponsor': x.sponsor,
-#                          'conditions': x.conditions,
-#                          'contact_name_1': x.contact_name1,
-#                          'contact_phone_1': x.contact_phone1,
-#                          'contact_email_1': x.contact_email1,
-#                          'contact_name_2': x.contact_name2,
-#                          'contact_phone_2': x.contact_phone2,
-#                          'contact_email_2': x.contact_email2,
-#                          'url': home_url+x.url})
+with open('20210325_output.csv', mode='w') as csv_file:
+    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+    writer.writeheader()
+    for x in data:
+        if valid_contact_names(x.contact_name1, x.contact_name2) and \
+                valid_email(x.contact_email1, x.contact_email2, email_blacklist):
+            writer.writerow({'Sponsor': x.sponsor,
+                             'Name': x.contact_name1,
+                             'Phone': x.contact_phone1,
+                             'Email': x.contact_email1,
+                             'Name (Alt Contact)': x.contact_name2,
+                             'Phone (Alt Contact)': x.contact_phone2,
+                             'Email (Alt Contact)': x.contact_email2,
+                             'Conditions': x.conditions,
+                             'URL': x.url})
 
 """Filter Data"""
 # filter and sort here
