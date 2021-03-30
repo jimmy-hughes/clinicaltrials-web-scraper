@@ -16,42 +16,49 @@ driver = webdriver.Chrome('chromedriver', options=options)
 driver.implicitly_wait(10)
 
 """Get Study URLs"""
-# results_URL = "https://clinicaltrials.gov/ct2/results?recrs=ab&cond=&term=&cntry=&state=&city=&dist="
-#
-# # read results webpage
-# driver.get(results_URL)
-# time.sleep(1) # wait for page to load
-# results_page = bs4.BeautifulSoup(driver.page_source, "html.parser")
-#
-# # change number of studies per page from 10 to 100
-# select = Select(driver.find_element_by_name('theDataTable_length')) # get drop down menu
-# select.select_by_value('100') # select 100
-# time.sleep(1) # wait for page to load
-# results_page = bs4.BeautifulSoup(driver.page_source, "html.parser") # read results page again
-#
-# # find out how many pages of results to expect
-# num_results = int(results_page.find(id='theDataTable_info').find('b').text.replace(',', '')) # total number of results
-# num_pages = int(num_results / 100) # divide by number of results per page
-#
-# # get study hyperlinks from page
-# study_urls = []
-# study_urls = get_urls(results_page, study_urls)
-# for i in range(num_pages):
-#     # click next button for new page of results
-#     next_button = driver.find_element_by_id("theDataTable_next")
-#     if next_button.is_displayed():
-#         driver.execute_script("arguments[0].click();", next_button)
-#         time.sleep(.2)
-#
-#     # read results page again
-#     results_page = bs4.BeautifulSoup(driver.page_source, "html.parser")
-#
-#     # get study hyperlinks from page
-#     study_urls = get_urls(results_page, study_urls)
-#
-# # save URLs to file
-# with open('study_urls.pickle', 'wb') as handle:
-#     pickle.dump(study_urls, handle, protocol=pickle.HIGHEST_PROTOCOL)
+results_URL = "https://clinicaltrials.gov/ct2/results?recrs=ab&cond=&term=&cntry=&state=&city=&dist="
+
+start_date = ['03', '25', '2021']
+stop_date = ['03', '30', '2021']
+results_URL = 'https://clinicaltrials.gov/ct2/results?cond=&term=&type=&rslt=&age_v=&gndr=&intr=&titles=&outc=&spons='+\
+              '&lead=&id=&cntry=&state=&city=&dist=&locn=&rsub=&strd_s=&strd_e=&prcd_s=&prcd_e=&sfpd_s=&sfpd_e=&rfpd_'+\
+              's=&rfpd_e=&lupd_s='+start_date[0]+'%2F'+start_date[1]+'%2F'+start_date[2]+'&lupd_e='+stop_date[0]+'%2F'+\
+              stop_date[1]+'%2F'+stop_date[2]+'&sort='
+
+# read results webpage
+driver.get(results_URL)
+time.sleep(1) # wait for page to load
+results_page = bs4.BeautifulSoup(driver.page_source, "html.parser")
+
+# change number of studies per page from 10 to 100
+select = Select(driver.find_element_by_name('theDataTable_length')) # get drop down menu
+select.select_by_value('100') # select 100
+time.sleep(1) # wait for page to load
+results_page = bs4.BeautifulSoup(driver.page_source, "html.parser") # read results page again
+
+# find out how many pages of results to expect
+num_results = int(results_page.find(id='theDataTable_info').find('b').text.replace(',', '')) # total number of results
+num_pages = int(num_results / 100) # divide by number of results per page
+
+# get study hyperlinks from page
+study_urls = []
+study_urls = get_urls(results_page, study_urls)
+for i in range(num_pages):
+    # click next button for new page of results
+    next_button = driver.find_element_by_id("theDataTable_next")
+    if next_button.is_displayed():
+        driver.execute_script("arguments[0].click();", next_button)
+        time.sleep(.2)
+
+    # read results page again
+    results_page = bs4.BeautifulSoup(driver.page_source, "html.parser")
+
+    # get study hyperlinks from page
+    study_urls = get_urls(results_page, study_urls)
+
+# save URLs to file
+with open('study_urls.pickle', 'wb') as handle:
+    pickle.dump(study_urls, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 """Read Study URLs from file"""
 # with open('20210325_study_urls.pickle', "rb") as handle:
@@ -117,51 +124,51 @@ driver.implicitly_wait(10)
 #     pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 """Read Study Data from file"""
-with open('20210325_data.pickle', "rb") as handle:
-    data = pickle.load(handle)
+# with open('20210325_data.pickle', "rb") as handle:
+#     data = pickle.load(handle)
 
 """Save information to CSV"""
-email_blacklist = ['.edu',
-                   '@163.com',
-                   'clinical@',
-                   'information@',
-                   'info@',
-                   'patients@',
-                   'clinical.trial@',
-                   'doctor@',
-                   'medinfo@'
-                   'clinicaltrialinfo@',
-                   'clinicalresearch@',
-                   'regulatory@',
-                   'rehabilitation@',
-                   'clinical.trials@',
-                   'Clinical.Trials@'
-                   'information.center@']
-fieldnames = ['Sponsor',
-              'Name',
-              'Phone',
-              'Email',
-              'Name (Alt Contact)',
-              'Phone (Alt Contact)',
-              'Email (Alt Contact)',
-              'Conditions',
-              'URL']
-
-with open('20210325_output.csv', mode='w') as csv_file:
-    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-    writer.writeheader()
-    for x in data:
-        if valid_contact_names(x.contact_name1, x.contact_name2) and \
-                valid_email(x.contact_email1, x.contact_email2, email_blacklist):
-            writer.writerow({'Sponsor': x.sponsor,
-                             'Name': x.contact_name1,
-                             'Phone': x.contact_phone1,
-                             'Email': x.contact_email1,
-                             'Name (Alt Contact)': x.contact_name2,
-                             'Phone (Alt Contact)': x.contact_phone2,
-                             'Email (Alt Contact)': x.contact_email2,
-                             'Conditions': x.conditions,
-                             'URL': x.url})
+# email_blacklist = ['.edu',
+#                    '@163.com',
+#                    'clinical@',
+#                    'information@',
+#                    'info@',
+#                    'patients@',
+#                    'clinical.trial@',
+#                    'doctor@',
+#                    'medinfo@'
+#                    'clinicaltrialinfo@',
+#                    'clinicalresearch@',
+#                    'regulatory@',
+#                    'rehabilitation@',
+#                    'clinical.trials@',
+#                    'Clinical.Trials@'
+#                    'information.center@']
+# fieldnames = ['Sponsor',
+#               'Name',
+#               'Phone',
+#               'Email',
+#               'Name (Alt Contact)',
+#               'Phone (Alt Contact)',
+#               'Email (Alt Contact)',
+#               'Conditions',
+#               'URL']
+#
+# with open('20210325_output.csv', mode='w') as csv_file:
+#     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+#     writer.writeheader()
+#     for x in data:
+#         if valid_contact_names(x.contact_name1, x.contact_name2) and \
+#                 valid_email(x.contact_email1, x.contact_email2, email_blacklist):
+#             writer.writerow({'Sponsor': x.sponsor,
+#                              'Name': x.contact_name1,
+#                              'Phone': x.contact_phone1,
+#                              'Email': x.contact_email1,
+#                              'Name (Alt Contact)': x.contact_name2,
+#                              'Phone (Alt Contact)': x.contact_phone2,
+#                              'Email (Alt Contact)': x.contact_email2,
+#                              'Conditions': x.conditions,
+#                              'URL': x.url})
 
 """Filter Data"""
 # filter and sort here
