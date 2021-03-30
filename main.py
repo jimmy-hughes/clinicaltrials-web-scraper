@@ -48,7 +48,7 @@ def main():
         """Gather URLs of each study in the search results"""
         print("Stage 1:")
         if search_range:
-            print("\tSearching studies updated between ", start_date, "-", stop_date)
+            print("\tSearching studies updated between:", start_date, "-", stop_date)
         else:
             print("\tSearching all studies in database")
         study_urls = gather_urls(search_range, start_date, stop_date)

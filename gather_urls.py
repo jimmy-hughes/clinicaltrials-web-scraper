@@ -59,5 +59,6 @@ def gather_urls(search_range, start_date, stop_date):
         pickle.dump(study_urls, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     print("\tURLs successfully saved to study_urls.pickle")
+    print("Number of results: ", len(study_urls))
 
     return study_urls
