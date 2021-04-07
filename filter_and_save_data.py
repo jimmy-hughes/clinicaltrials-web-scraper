@@ -1,7 +1,7 @@
 import csv
 from web_scraping_utils import *
 
-def filter_and_save_data(data, email_blacklist):
+def filter_and_save_data(data, email_blacklist, sponsor_blacklist):
     fieldnames = ['Sponsor',
                   'Name',
                   'Phone',
@@ -17,7 +17,8 @@ def filter_and_save_data(data, email_blacklist):
         writer.writeheader()
         for x in data:
             if valid_contact_names(x.contact_name1, x.contact_name2) and \
-                    valid_email(x.contact_email1, x.contact_email2, email_blacklist):
+                    valid_email(x.contact_email1, x.contact_email2, email_blacklist) and \
+                    valid_sponsor(x.sponsor, sponsor_blacklist):
                 writer.writerow({'Sponsor': x.sponsor,
                                  'Name': x.contact_name1,
                                  'Phone': x.contact_phone1,
