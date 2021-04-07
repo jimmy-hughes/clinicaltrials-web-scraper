@@ -13,7 +13,7 @@ def main():
     # 1: Get study URLs from search results
     # 2: Gather data from each study
     # 3: Filter and save data to CSV
-    stage = 1
+    stage = 3
 
     # ----- stage = 1 -----
     search_range = True  # search over range of dates?
@@ -28,6 +28,7 @@ def main():
     email_blacklist = ['.edu', '@163.com', 'clinical@', 'information@', 'info@', 'patients@', 'clinical.trial@',
                        'doctor@', 'medinfo@', 'clinicaltrialinfo@', 'clinicalresearch@', 'regulatory@',
                        'rehabilitation@', 'clinical.trials@', 'Clinical.Trials@', 'information.center@']
+    sponsor_blacklist = ['University']
 
     """---------------------------------"""
     """---------------------------------"""
@@ -63,7 +64,7 @@ def main():
         """Filter and save data to CSV"""
         print("Stage 3:")
         print("\tFiltering data and saving to CSV")
-        filter_and_save_data(data, email_blacklist)
+        filter_and_save_data(data, email_blacklist, sponsor_blacklist)
 
 
 if __name__ == "__main__":
