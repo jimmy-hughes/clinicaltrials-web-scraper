@@ -35,6 +35,12 @@ def valid_email(email1, email2, blacklist):
             return False
     return True
 
+def valid_sponsor(sponsor, blacklist):
+    for x in blacklist:
+        if x in sponsor:
+            return False
+    return True
+
 
 def valid_contact_names(name1 , name2):
     if name1 == '' and name2 == '':

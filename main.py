@@ -174,8 +174,6 @@ def main():
                          'Dalarna County Council, Sweden', 'Damian Ratano', 'Dan Adler', 'Dan Rhon', 'Dan Su', 'Dan Zandberg', 'Danbury Hospital', 'Daniel Claassen',
                          'Daniel L Lustgarten', 'Daniela Francescato Veiga', 'Daniela Nosch', 'Danielle Gentile', 'Danilo Toni', 'Danisco' ]
 
-                       
-
     """---------------------------------"""
     """---------------------------------"""
     """---------------------------------"""
