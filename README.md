@@ -1,8 +1,10 @@
 # clinicaltrials-web-scraper
 
-Requirements
+## Overview
+Web scraping script for collecting clinical trails information from [Clincal Trials](https://clinicaltrials.gov/)
 
-requests
-beautifulsoup4
-chromium-chromedriver
-selenium
+## Requirements
+- requests
+- beautifulsoup4
+- chromium-chromedriver
+- selenium
